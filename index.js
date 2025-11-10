@@ -50,6 +50,15 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    app.get("/allIssues/:id", async (req, res) => {
+      const id = req.params.id;
+
+      // const query = { _id: new ObjectId(id) };
+      const query = { _id: id };
+      // console.log(query);
+      const result = await issueCollection.findOne(query);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
