@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -25,14 +25,24 @@ async function run() {
   try {
     await client.connect();
 
-    const db = client.db("myDatabaseName");
+    const db = client.db("IssueReportingPortal");
     const usersCollection = db.collection("users");
+    const issueCollection = db.collection("issues");
+    const contributionCollection = db.collection("contribution");
 
     app.post("/user", async (req, res) => {
       const newUser = req.body;
       const result = await usersCollection.insertOne(newUser);
       res.send(result);
     });
+    app.get("/issues", async (req, res) => {
+      const cursor = issueCollection.find().sort({ date: -1 }).limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
