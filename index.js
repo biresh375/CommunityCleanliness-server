@@ -65,6 +65,21 @@ async function run() {
       const result = await issueCollection.insertOne(newIssue);
       res.send(result);
     });
+    app.get("/contribution", async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+      const cursor = contributionCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.post("/contribution", async (req, res) => {
+      const newIssue = req.body;
+      const result = await contributionCollection.insertOne(newIssue);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
