@@ -53,9 +53,9 @@ async function run() {
     app.get("/allIssues/:id", async (req, res) => {
       const id = req.params.id;
 
-      // const query = { _id: new ObjectId(id) };
-      const query = { _id: id };
-      // console.log(query);
+      const query = { _id: new ObjectId(id) };
+      // const query = { _id: id };
+
       const result = await issueCollection.findOne(query);
       res.send(result);
     });
@@ -65,22 +65,64 @@ async function run() {
       const result = await issueCollection.insertOne(newIssue);
       res.send(result);
     });
+    //Delete issue api
+    app.delete("/allIssues/:id", async (req, res) => {
+      const id = req.params.id;
+      try {
+        const query = { _id: new ObjectId(id) };
+        // const query ={_id:id}
+        const result = await issueCollection.deleteOne(query);
+
+        if (result.deletedCount === 1) {
+          res.status(200).json({ message: "Issue deleted successfully" });
+        } else {
+          res.status(404).json({ message: "Issue not found" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error deleting issue", error });
+      }
+    });
+    //update issue api
+    app.patch("/allIssues/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+
+      try {
+        const query = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: updatedData,
+        };
+
+        const result = await issueCollection.updateOne(query, updateDoc);
+        res.send(result);
+        // if (result.matchedCount === 0) {
+        //   return res.status(404).json({ message: "Issue not found" });
+        // }
+
+        // res.status(200).json({ message: "Issue updated successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error updating issue", error });
+      }
+    });
+
     app.get("/contribution", async (req, res) => {
       const email = req.query.email;
       const query = {};
       if (email) {
         query.email = email;
       }
-      const cursor = contributionCollection.find(query);
+      const cursor = contributionCollection.find(query).sort({ date: -1 });
       const result = await cursor.toArray();
       res.send(result);
     });
 
     app.get("/issue/contribution/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { issueId: id };
-      // const query = {issueId:new ObjectId(id)}
-      const cursor = contributionCollection.find(query).sort({ date: -1 });
+      // const query = { issueId: id };
+      const query = { issueId: new ObjectId(id) };
+      const cursor = contributionCollection.find(query).sort({ date: 1 });
       const result = await cursor.toArray();
       res.send(result);
     });
