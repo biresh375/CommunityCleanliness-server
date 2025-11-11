@@ -75,6 +75,16 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/issue/contribution/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { issueId: id };
+      // const query = {issueId:new ObjectId(id)}
+      const cursor = contributionCollection.find(query).sort({ date: -1 });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post("/contribution", async (req, res) => {
       const newIssue = req.body;
       const result = await contributionCollection.insertOne(newIssue);
