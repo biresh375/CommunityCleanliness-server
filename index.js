@@ -30,11 +30,28 @@ async function run() {
     const issueCollection = db.collection("issues");
     const contributionCollection = db.collection("contribution");
 
-    app.post("/user", async (req, res) => {
-      const newUser = req.body;
-      const result = await usersCollection.insertOne(newUser);
-      res.send(result);
+    app.post("/users", async (req, res) => {
+      try {
+        const user = req.body;
+        const existingUser = await usersCollection.findOne({
+          email: user.email,
+        });
+        if (existingUser) {
+          return res.send({
+            message: "User already exists",
+            inserted: false,
+          });
+        }
+
+        const result = await usersCollection.insertOne(user);
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error saving user:", error);
+        res.status(500).send({ error: "Failed to save user" });
+      }
     });
+
     app.get("/issues", async (req, res) => {
       const cursor = issueCollection.find().sort({ date: -1 }).limit(6);
       const result = await cursor.toArray();
@@ -120,8 +137,8 @@ async function run() {
 
     app.get("/issue/contribution/:id", async (req, res) => {
       const id = req.params.id;
-      // const query = { issueId: id };
-      const query = { issueId: new ObjectId(id) };
+      const query = { issueId: id };
+      // const query = { issueId: new ObjectId(id) };
       const cursor = contributionCollection.find(query).sort({ date: 1 });
       const result = await cursor.toArray();
       res.send(result);
